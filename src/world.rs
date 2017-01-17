@@ -1,9 +1,9 @@
-extern crate rand;
-
 use std::collections::HashSet;
 use std::collections::hash_set;
 use std::vec::Vec;
 use std::iter::Iterator;
+use rand::{ sample };
+use rand;
 
 
 #[derive(Debug)]
@@ -12,7 +12,7 @@ pub struct GridSize {
     pub y: usize,
 }
 
-#[derive(Clone,Copy,PartialEq,Eq,Hash)]
+#[derive(Clone,Copy,PartialEq,Eq,Hash,Debug)]
 pub struct CellPosition {
     pub x: usize,
     pub y: usize,
@@ -35,7 +35,7 @@ impl WorldState {
         }
     }
 
-    pub fn get_cell(&mut self, cell: CellPosition) -> CellState {
+    pub fn get_cell(&self, cell: CellPosition) -> CellState {
         match self._alive_cells.contains(&cell) {
             true => CellState::Alive,
             false => CellState::Dead,
@@ -44,8 +44,8 @@ impl WorldState {
 
     pub fn set_cell(&mut self, cell: CellPosition, state: CellState) {
         match state {
-            CellState::Alive => { self._alive_cells.insert(cell) },
-            CellState::Dead => { self._alive_cells.remove(&cell) }
+            CellState::Alive => { self._alive_cells.insert(cell); },
+            CellState::Dead => { self._alive_cells.remove(&cell); }
         }
     }
 
@@ -60,8 +60,8 @@ impl WorldState {
             for ydif in -1..2 {
                 if !(xdif == 0 && ydif == 0) {
                     let neighbor = CellPosition {
-                        x: cell.x + xdif,
-                        y: cell.y + ydif,
+                        x: cell.x + (xdif as usize),
+                        y: cell.y + (ydif as usize),
                     };
                     neighbors.push(neighbor);
                 }
@@ -112,20 +112,23 @@ pub fn tick(world: WorldState) -> WorldState {
 }
 
 
-fn random_world(size: GridSize) -> word::WorldState {
-    use rand::{ sample };
+pub fn random_world(size: GridSize) -> WorldState {
 
-    let mut world_state = world::WorldState::new();
+    let mut world_state = WorldState::new();
 
     let mut rng = rand::thread_rng();
 
-    let num_cells = size.x * size.y / 3;
+    let num_cells = (size.x * size.y);
+    let num_samples = (size.x * size.y / 3);
 
-    let samples_x: Vec<usize> = sample(&mut rng, 0..(size.x + 1), num_cells);
-    let samples_y: Vec<usize> = sample(&mut rng, 0..(size.y + 1), num_cells);
+    let samples: Vec<usize> = sample(&mut rng, 0..num_cells, num_cells);
 
-    for (x, y) in samples_x.iter().zip(samples_y.iter()) {
-        info!("x={:?}, y={:?}", x, y);
+    for pos in samples.iter() {
+        let y = *pos / size.y;
+        let x = *pos % size.y;
+
+        info!(target: "game", "x={:?}, y={:?}", x, y);
+
         let pos = CellPosition {
             x: x,
             y: y
