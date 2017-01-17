@@ -7,7 +7,7 @@ use piston::input::{ RenderArgs };
 use graphics::{ Context };
 
 mod grid;
-use grid::{ Cell, Grid, Location };
+use grid::{Block, Grid, Location };
 
 mod game;
 use game::{ App };
