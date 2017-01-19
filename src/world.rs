@@ -6,7 +6,7 @@ use rand::{ sample };
 use rand;
 
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct GridSize {
     pub x: usize,
     pub y: usize,
@@ -58,10 +58,13 @@ impl WorldState {
 
         for xdif in -1..2 {
             for ydif in -1..2 {
-                if !(xdif == 0 && ydif == 0) {
+                let x = (cell.x as isize) + xdif;
+                let y = (cell.y as isize) + ydif;
+
+                if !(xdif == 0 && ydif == 0 && x >= 0 && y >= 0) {
                     let neighbor = CellPosition {
-                        x: cell.x + (xdif as usize),
-                        y: cell.y + (ydif as usize),
+                        x: x as usize,
+                        y: y as usize,
                     };
                     neighbors.push(neighbor);
                 }
@@ -84,7 +87,7 @@ impl WorldState {
 // 2. Any live cell with two or three live neighbors lives on to the next generation.
 // 3. Any live cell with more than three live neighbors dies, as if by overcrowding.
 // 4. Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
-pub fn tick(world: WorldState) -> WorldState {
+pub fn tick(world: &WorldState) -> WorldState {
     let mut cells_to_visit = HashSet::new();
 
     let alive_cells = world.alive_cells();

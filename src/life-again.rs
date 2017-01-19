@@ -25,7 +25,7 @@ use piston::input::{ RenderEvent, UpdateEvent, RenderArgs, UpdateArgs };
 use piston::window::Size;
 
 mod world;
-use world::{ CellPosition, CellState, GridSize };
+use world::{ CellPosition, CellState, GridSize, random_world };
 
 #[derive(Debug)]
 pub struct GameSettings {
@@ -37,18 +37,18 @@ impl Default for GameSettings {
     fn default() -> GameSettings {
         GameSettings {
             block_size: 10,
-            grid_size: [64, 48],
+            grid_size: GridSize { y: 64, x: 48 },
         }
     }
 }
 
 impl GameSettings {
     pub fn window_height(&self) -> u32 {
-        (self.block_size * self.grid_size[1]) as u32
+        (self.block_size * self.grid_size.y) as u32
     }
 
     pub fn window_width(&self) -> u32 {
-        (self.block_size * self.grid_size[0]) as u32
+        (self.block_size * self.grid_size.x) as u32
     }
 
     pub fn window_size(&self) -> Size {
@@ -66,20 +66,22 @@ pub struct Game {
 }
 
 impl Game {
-    fn render(&self, args: &RenderArgs) {
-        use graphics::*;
+    fn render(&mut self, args: &RenderArgs) {
+        let circle_radius = (self.settings.block_size - 2) as f64;
+        let alive_cells = self.world_state.alive_cells();
 
         const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
         const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 
-        self.gl.draw(args.viewport(), |c, gl| {
+        (&mut self.gl).draw(args.viewport(), |c, gl| {
+            use graphics::*;
             clear(BLACK, gl);
 
-            for cell in self.ali {
+            for cell in alive_cells {
                 let circle = rectangle::square(
-                    cell.loc.x as f64,
-                    cell.loc.y as f64,
-                    (self.settings.block_size - 2) as f64);
+                    cell.x as f64,
+                    cell.y as f64,
+                    circle_radius);
 
                 ellipse(WHITE, circle, c.transform, gl);
             }
@@ -87,7 +89,7 @@ impl Game {
     }
 
 	fn update(&mut self, args: &UpdateArgs) {
-        self.world_state = world::tick(self.world_state);
+        self.world_state = world::tick(&self.world_state);
 	}
 }
 
@@ -109,7 +111,7 @@ fn main() {
 
     let mut game = Game {
         gl: GlGraphics::new(opengl),
-        world_state: random_world(settings.grid_size),
+        world_state: random_world(settings.grid_size.clone()),
         settings: settings
     };
 
