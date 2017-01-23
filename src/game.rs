@@ -12,7 +12,7 @@ use piston::input::{
 use piston::window::Size;
 
 use world;
-use world::{ WorldState, CellPosition, CellState };
+use world::{ WorldState, CellPosition, CellState, random_world };
 
 enum DrawingMode {
     Kill,
@@ -40,7 +40,7 @@ impl Game {
             gl: gl,
             mouse_pos: (0.0, 0.0),
             window_size: window_size,
-            block_size: 10.0,
+            block_size: 20.0,
             world_state: world_state,
             is_ticking: false,
             is_drawing: false,
@@ -54,28 +54,32 @@ impl Game {
         let alive_cells = self.world_state.alive_cells();
         let block_size = self.block_size;
         let is_ticking = self.is_ticking;
+        let (max_x, max_y) = self.window_size;
 
-        const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
-        const DARK_GRAY: [f32; 4] = [0.3, 0.3, 0.3, 1.0];
+        const RUNNING_BG: [f32; 4] = [0.3, 0.3, 0.3, 1.0];
+        const PAUSED_BG: [f32; 4] = [0.4, 0.3, 0.3, 1.0];
         const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 
         gl.draw(args.viewport(), |c, gl| {
             use graphics::*;
             match is_ticking {
-                true => clear(BLACK, gl),
-                false => clear(DARK_GRAY, gl),
+                true => clear(RUNNING_BG, gl),
+                false => clear(PAUSED_BG, gl),
             };
 
             for &cell in alive_cells {
                 let cx: i32 = cell.x * block_size as i32;
                 let cy: i32 = cell.y * block_size as i32;
 
-                let circle = rectangle::square(
-                    cx as f64,
-                    cy as f64,
-                    circle_radius);
+                if 0 <= cx && cx < max_x as i32
+                    && 0 <= cy  && cy < max_y as i32 {
+                    let circle = rectangle::square(
+                        cx as f64,
+                        cy as f64,
+                        circle_radius);
 
-                ellipse(WHITE, circle, c.transform, gl);
+                    ellipse(WHITE, circle, c.transform, gl);
+                }
             }
         })
     }
@@ -119,6 +123,7 @@ impl Game {
             }
             Button::Keyboard(Key::Space) => { self.toggle_is_ticking(); },
             Button::Keyboard(Key::Backspace) => { self.kill_all_cells(); },
+            Button::Keyboard(Key::R) => { self.randomize_world(); },
             _ => {},
         };
     }
@@ -130,6 +135,15 @@ impl Game {
             DrawingMode::Kill => { self.kill_cell_at_mouse_location(); },
             DrawingMode::Spawn => { self.create_cell_at_mouse_location(); },
         };
+    }
+
+    fn randomize_world(&mut self) {
+        let (wx, wy) = self.window_size;
+        let size = (
+            (wx as f64 / self.block_size) as i32,
+            (wy as f64 / self.block_size) as i32,
+        );
+        self.world_state = random_world(size)
     }
 
     fn start_drawing(&mut self, mode: DrawingMode) {

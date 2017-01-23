@@ -121,7 +121,7 @@ pub fn random_world(size: (i32, i32)) -> WorldState {
 
     for &pos in samples.iter() {
         let y: i32 = pos / size_x;
-        let x: i32 = pos % size_y;
+        let x: i32 = pos % size_x;
 
         info!(target: "game", "x={:?}, y={:?}", x, y);
 

@@ -14,6 +14,7 @@ Key                         Action
 ``MouseButton::Left``       Draw alive cells
 ``MouseButton::Right``      Draw dead cells
 ``Key::Backspace``          Kill all cells
+``Key::R``                  Randomize population
 ==========================  ==============================
 
 # Thanks

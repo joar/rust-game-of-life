@@ -7,10 +7,6 @@ authors = ["Joar Wandborg <joar@wandborg.se>"]
 name = "game-of-life"
 path = "src/life.rs"
 
-[[bin]]
-name = "world-test"
-path = "src/world-test.rs"
-
 [dependencies]
 log = "0.3"
 env_logger = "0.3"
