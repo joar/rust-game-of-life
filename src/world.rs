@@ -7,15 +7,15 @@ use rand;
 
 
 #[derive(Debug,Clone)]
-pub struct GridSize {
-    pub x: usize,
-    pub y: usize,
+pub struct ViewSize {
+    pub x: i32,
+    pub y: i32,
 }
 
 #[derive(Clone,Copy,PartialEq,Eq,Hash,Debug)]
 pub struct CellPosition {
-    pub x: usize,
-    pub y: usize,
+    pub x: i32,
+    pub y: i32,
 }
 
 #[derive(PartialEq,Eq,Clone,Copy)]
@@ -26,14 +26,12 @@ pub enum CellState {
 
 pub struct WorldState {
     _alive_cells: HashSet<CellPosition>,
-    grid_size: GridSize,
 }
 
 impl WorldState {
-    pub fn new(width: usize, height: usize) -> WorldState {
+    pub fn new() -> WorldState {
         WorldState {
             _alive_cells: HashSet::new(),
-            
         }
     }
 
@@ -60,13 +58,13 @@ impl WorldState {
 
         for xdif in -1..2 {
             for ydif in -1..2 {
-                let x: isize = (cell.x as isize) + xdif;
-                let y: isize = (cell.y as isize) + ydif;
+                let x: i32 = cell.x + xdif;
+                let y: i32 = cell.y + ydif;
 
-                if !(xdif == 0 && ydif == 0) && (x >= 0 && y >= 0) {
+                if !(xdif == 0 && ydif == 0) {
                     let neighbor = CellPosition {
-                        x: x as usize,
-                        y: y as usize,
+                        x: x,
+                        y: y,
                     };
                     neighbors.push(neighbor);
                 }
@@ -90,7 +88,6 @@ impl WorldState {
 // 3. Any live cell with more than three live neighbors dies, as if by overcrowding.
 // 4. Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
 pub fn tick(world: &WorldState) -> WorldState {
-    debug!("tick");
     let mut cells_to_visit = HashSet::new();
 
     let alive_cells = world.alive_cells();
@@ -118,7 +115,7 @@ pub fn tick(world: &WorldState) -> WorldState {
 }
 
 
-pub fn random_world(size: GridSize) -> WorldState {
+pub fn random_world(size: ViewSize) -> WorldState {
     let mut world_state = WorldState::new();
 
     let mut rng = rand::thread_rng();
@@ -126,11 +123,11 @@ pub fn random_world(size: GridSize) -> WorldState {
     let num_cells = (size.x * size.y);
     let num_samples = num_cells / 3;
 
-    let samples: Vec<usize> = sample(&mut rng, 0..num_cells, num_samples);
+    let samples: Vec<i32> = sample(&mut rng, 0..num_cells, num_samples as usize);
 
     for pos in samples.iter() {
-        let y = *pos / size.y;
-        let x = *pos % size.y;
+        let y: i32 = *pos / size.y;
+        let x: i32 = *pos % size.y;
 
         info!(target: "game", "x={:?}, y={:?}", x, y);
 

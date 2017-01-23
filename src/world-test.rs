@@ -6,13 +6,13 @@ use std::vec::Vec;
 
 mod world;
 
-use world::{ WorldState, CellPosition, random_world, GridSize };
+use world::{WorldState, CellPosition, random_world, ViewSize};
 
 fn main() {
     env_logger::init().unwrap();
     println!("Hello world!");
 
-    let size = GridSize { x: 10, y: 10 };
+    let size = ViewSize { x: 10, y: 10 };
 
     info!(target: "game", "Grid size: {:?}", size);
     let world = random_world(size);
