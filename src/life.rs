@@ -17,14 +17,17 @@ use piston::input::{
     RenderEvent,
     UpdateEvent,
     PressEvent,
+    ReleaseEvent,
+    ResizeEvent,
+    MouseCursorEvent,
     RenderArgs,
     UpdateArgs,
-    Button
+    Button,
 };
 
 mod world;
 mod game;
-use game::{ GameSettings, Game };
+use game::{ Game };
 use world::{ random_world };
 
 fn main() {
@@ -46,11 +49,11 @@ fn main() {
 
     let opengl = OpenGL::V3_2;
 
-    let settings: GameSettings = Default::default();
+    let window_size = (640u32, 480u32);
 
     let mut window: Window = WindowSettings::new(
             "Game of Life",
-            settings.window_size()
+            window_size,
         )
         .fullscreen(false)
         .vsync(true)
@@ -60,9 +63,9 @@ fn main() {
         .unwrap();
 
     let mut game = Game::new(
+        window_size,
         GlGraphics::new(opengl),
-        settings.clone(),
-        random_world(settings.view_size.clone()),
+        random_world((64, 48)),
     );
 
     let mut events = window.events();
@@ -76,8 +79,20 @@ fn main() {
     events.max_fps(fps);
 
     while let Some(e) = events.next(&mut window) {
-        if let Some(Button::Mouse(button)) = e.press_args() {
-            game.on_mouse_press(&button);
+        e.mouse_cursor(|x, y| {
+            game.update_mouse_pos(x, y);
+        });
+
+        e.resize(|width, height| {
+            game.update_size(width, height);
+        });
+
+        if let Some(button) = e.press_args() {
+            game.handle_button_press(button);
+        }
+
+        if let Some(button) = e.release_args() {
+            game.handle_button_release(button);
         }
 
         if let Some(r) = e.render_args() {
@@ -85,7 +100,7 @@ fn main() {
         }
 
         if let Some(u) = e.update_args() {
-            game.update(&u);
+            game.tick(&u);
         }
     }
 }

@@ -5,13 +5,6 @@ use std::iter::Iterator;
 use rand::{ sample };
 use rand;
 
-
-#[derive(Debug,Clone)]
-pub struct ViewSize {
-    pub x: i32,
-    pub y: i32,
-}
-
 #[derive(Clone,Copy,PartialEq,Eq,Hash,Debug)]
 pub struct CellPosition {
     pub x: i32,
@@ -115,19 +108,20 @@ pub fn tick(world: &WorldState) -> WorldState {
 }
 
 
-pub fn random_world(size: ViewSize) -> WorldState {
+pub fn random_world(size: (i32, i32)) -> WorldState {
     let mut world_state = WorldState::new();
+    let (size_x, size_y) = size;
 
     let mut rng = rand::thread_rng();
 
-    let num_cells = (size.x * size.y);
+    let num_cells = (size_x * size_y);
     let num_samples = num_cells / 3;
 
     let samples: Vec<i32> = sample(&mut rng, 0..num_cells, num_samples as usize);
 
-    for pos in samples.iter() {
-        let y: i32 = *pos / size.y;
-        let x: i32 = *pos % size.y;
+    for &pos in samples.iter() {
+        let y: i32 = pos / size_x;
+        let x: i32 = pos % size_y;
 
         info!(target: "game", "x={:?}, y={:?}", x, y);
 
