@@ -86,7 +86,7 @@ impl Game {
 
     pub fn tick(&mut self, args: &UpdateArgs) {
         if self.is_ticking {
-            self.world_state = world::tick(&self.world_state);
+            world::tick(&mut self.world_state);
         }
     }
 

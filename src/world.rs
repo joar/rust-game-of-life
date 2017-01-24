@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::collections::hash_set;
 use std::vec::Vec;
 use std::iter::Iterator;
+use std::cell::RefCell;
 use rand::{ sample };
 use rand;
 
@@ -76,14 +77,25 @@ impl WorldState {
 }
 
 // Rules:
-// 1. Any live cell with fewer than two live neighbors dies, as if caused by under-population.
-// 2. Any live cell with two or three live neighbors lives on to the next generation.
-// 3. Any live cell with more than three live neighbors dies, as if by overcrowding.
-// 4. Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
-pub fn tick(world: &WorldState) -> WorldState {
+// 1.   Any live cell with fewer than two live neighbors dies, as if caused by
+//      under-population.
+// 2.   Any live cell with two or three live neighbors lives on to the next
+//      generation.
+// 3.   Any live cell with more than three live neighbors dies, as if by
+//      overcrowding.
+// 4.   Any dead cell with exactly three live neighbors becomes a live cell, as
+//      if by reproduction.
+pub fn tick(world: &mut WorldState) {
+    let cells = visit_cells(&world);
+    let mut world_mut = world;
+    set_cells(&mut world_mut, &cells);
+}
+
+fn visit_cells(world: &WorldState) -> Vec<(CellPosition, CellState)> {
     let mut cells_to_visit = HashSet::new();
 
     let alive_cells = world.alive_cells();
+
     for &cell in alive_cells {
         cells_to_visit.insert(cell);
         for neighbor in world.neighbors(cell) {
@@ -91,7 +103,8 @@ pub fn tick(world: &WorldState) -> WorldState {
         }
     }
 
-    let mut next_world_state = WorldState::new();
+    let mut cells: Vec<(CellPosition, CellState)> = Vec::new();
+
     for cell in cells_to_visit {
         let cell_state = world.get_cell(cell);
         let alive_neighbors = world.alive_neighbors(cell);
@@ -102,11 +115,20 @@ pub fn tick(world: &WorldState) -> WorldState {
             CellState::Dead if alive_neighbors == 3 => CellState::Alive,
             CellState::Dead => CellState::Dead
         };
-        next_world_state.set_cell(cell, new_cell_state);
+        cells.push((cell, new_cell_state));
     }
-    next_world_state
+    cells
 }
 
+fn set_cells(
+    world: &mut WorldState,
+    cells: &Vec<(CellPosition, CellState)>
+) {
+    for &item in cells.iter() {
+        let (cell, state) = item;
+        world.set_cell(cell, state);
+    }
+}
 
 pub fn random_world(size: (i32, i32)) -> WorldState {
     let mut world_state = WorldState::new();
