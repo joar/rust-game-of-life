@@ -1,4 +1,5 @@
 use std::default::Default;
+use std::vec::Vec;
 
 use opengl_graphics::{ GlGraphics };
 use piston::input::{
@@ -124,11 +125,16 @@ impl Game {
             Button::Keyboard(Key::Space) => { self.toggle_is_ticking(); },
             Button::Keyboard(Key::Backspace) => { self.kill_all_cells(); },
             Button::Keyboard(Key::R) => { self.randomize_world(); },
+            Button::Keyboard(Key::G) => { self.insert_gun(); },
             _ => {},
         };
     }
 
     // Private
+
+    fn insert_gun(&mut self) {
+        insert_glider_gun(&mut self.world_state);
+    }
 
     fn handle_draw(&mut self) {
         match self.drawing_mode {
@@ -193,3 +199,42 @@ impl Game {
     }
 }
 
+
+fn insert_glider_gun(world: &mut WorldState) {
+    let glider_gun: Vec<(i32, i32)> = vec![
+        // y, x
+        // right thing
+        (2, 26),
+        (3, 24), (3, 26),
+        (4, 22), (4, 23),
+        (5, 22), (5, 23),
+        (6, 22), (6, 23),
+        (7, 24), (7, 26),
+        (8, 26),
+
+        // Right blob
+        (4, 36),
+        (4, 37),
+        (5, 36),
+        (5, 37),
+
+        // left thing
+        (4, 14), (4, 15),
+        (5, 13), (5, 17),
+        (6, 12), (6, 18),
+        (7, 12), (7, 16), (7, 18), (7, 19),
+        (8, 12), (8, 18),
+        (9, 13), (9, 17),
+        (10, 14), (10, 15),
+
+        // left blob
+        (6, 2), (6, 3),
+        (7, 2), (7, 3),
+    ];
+
+    for &pos in glider_gun.iter() {
+        let (y, x) = pos;
+        let cell = CellPosition { x: x, y: y };
+        world.set_cell(cell, CellState::Alive);
+    }
+}

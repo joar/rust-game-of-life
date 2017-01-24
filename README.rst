@@ -15,6 +15,7 @@ Key                         Action
 ``MouseButton::Right``      Draw dead cells
 ``Key::Backspace``          Kill all cells
 ``Key::R``                  Randomize population
+``Key::G``                  Spawn glider gun
 ==========================  ==============================
 
 # Thanks

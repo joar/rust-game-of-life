@@ -2,7 +2,6 @@ use std::collections::HashSet;
 use std::collections::hash_set;
 use std::vec::Vec;
 use std::iter::Iterator;
-use std::cell::RefCell;
 use rand::{ sample };
 use rand;
 
